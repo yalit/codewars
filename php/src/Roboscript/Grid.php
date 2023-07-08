@@ -21,7 +21,7 @@ final class Grid
         for ($y = $minMax['height']['min']; $y <= $minMax['height']['max']; $y++) {
             $grid[] = "";
             for ($x = $minMax['width']['min']; $x <= $minMax['width']['max']; $x++) {
-                $grid[$y - $minMax['height']['min']] .= static::isInPositions($this->positions, new Position($x, $y)) ? "*" : " ";
+                $grid[$y - $minMax['height']['min']] .= static::isInPositions($this->positions, new Position($x, $y, Direction::UP)) ? "*" : " ";
             }
         }
 

@@ -33,10 +33,10 @@ enum Direction: string {
     public function nextPosition(Position $p): Position 
     {
         return match($this) {
-            self::UP => new Position($p->x, $p->y - 1),
-            self::RIGHT => new Position($p->x + 1, $p->y),
-            self::DOWN => new Position($p->x, $p->y + 1),
-            self::LEFT => new Position($p->x - 1, $p->y),
+            self::UP => new Position($p->x, $p->y - 1, $this),
+            self::RIGHT => new Position($p->x + 1, $p->y, $this),
+            self::DOWN => new Position($p->x, $p->y + 1, $this),
+            self::LEFT => new Position($p->x - 1, $p->y, $this),
         };
     }
     

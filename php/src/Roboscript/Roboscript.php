@@ -23,52 +23,17 @@ final class Roboscript
     public static function execute(string $code): string
     {
         //initialize
-        $positions = [new Position(0, 0)];
-        $dir = Direction::RIGHT;
+        /** @var Position[] $positions */
+        $positions = [new Position(0, 0, Direction::RIGHT)];
 
         $i = 0;
         $execCode = str_split($code);
-        $lastExec = "";
         while($i < count($execCode)) {
-            $lastExec = $execCode[$i];
-            $nb = 1;
-            if ($i+1 < count($execCode) && \is_numeric($execCode[$i + 1])) {
-                $temp = "";
-                 while ($i + 1 < count($execCode) && \is_numeric($execCode[$i + 1])) {
-                    $temp .= $execCode[$i + 1];
-                    $i++;
-                 }
-                 $nb = (int)$temp;
-            }
-
-            $i++;
-            if ($lastExec === "") {
-                continue;
-            }
-
-            $dir = static::executeInstruction($lastExec, $nb, $positions, $dir);
+            $instruction = InstructionParser::getNextInstruction(\array_slice($execCode, $i));
+            $positions = \array_merge($positions, $instruction->execute($positions[count($positions) - 1]));
+            $i += $instruction->size();
         }
 
         return (new Grid($positions))->display();
     }
-
-    private static function executeInstruction(string $inst, int $nb, array &$positions, Direction $dir): Direction 
-    {
-        for ($a = 0; $a < $nb; $a++) {
-            $dir = match($inst) {
-                "F" => static::executeForward($positions, $dir),
-                "L" => $dir->goLeft(),
-                "R" => $dir->goRight()
-            };
-        }
-
-        return $dir;
-    }
-
-    private static function executeForward(array &$positions, Direction $dir): Direction 
-    {
-        $positions[] = $dir->nextPosition($positions[count($positions) - 1]);
-        return $dir;
-    }
-    
 }
