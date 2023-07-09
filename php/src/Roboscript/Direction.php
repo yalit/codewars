@@ -4,40 +4,43 @@ declare(strict_types=1);
 
 namespace App\Roboscript;
 
-enum Direction: string {
-    case UP = "U";
-    case DOWN = "D";
-    case RIGHT = "R";
-    case LEFT = "L"; 
+class Direction {
+    public const UP = "U";
+    public const DOWN = "D";
+    public const RIGHT = "R";
+    public const LEFT = "L"; 
 
-    public function goRight() 
+    public function __construct(public string $direction)
     {
-        return match ($this) {
-            self::UP => self::RIGHT,
-            self::RIGHT => self::DOWN,
-            self::DOWN => self::LEFT,
-            self::LEFT => self::UP,
+    }
+
+    public function goRight(): self
+    {
+        return match ($this->direction) {
+            self::UP => new self(self::RIGHT),
+            self::RIGHT => new self(self::DOWN),
+            self::DOWN => new self(self::LEFT),
+            self::LEFT => new self(self::UP),
         };
     }
 
-    public function goLeft() 
+    public function goLeft(): self
     {
-        return match ($this) {
-            self::UP => self::LEFT,
-            self::RIGHT => self::UP,
-            self::DOWN => self::RIGHT,
-            self::LEFT => self::DOWN,
+        return match ($this->direction) {
+            self::UP => new self(self::LEFT),
+            self::RIGHT => new self(self::UP),
+            self::DOWN => new self(self::RIGHT),
+            self::LEFT => new self(self::DOWN),
         };
     }
 
-    public function nextPosition(Position $p): Position 
+    public function nextPosition(array $p): array 
     {
-        return match($this) {
-            self::UP => new Position($p->x, $p->y - 1, $this),
-            self::RIGHT => new Position($p->x + 1, $p->y, $this),
-            self::DOWN => new Position($p->x, $p->y + 1, $this),
-            self::LEFT => new Position($p->x - 1, $p->y, $this),
+        return match($this->direction) {
+            self::UP => [$p[0], $p[1] - 1],
+            self::RIGHT => [$p[0] + 1, $p[1]],
+            self::DOWN => [$p[0], $p[1] + 1],
+            self::LEFT => [$p[0] - 1, $p[1]],
         };
     }
-    
 }

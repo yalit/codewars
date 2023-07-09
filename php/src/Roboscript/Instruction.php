@@ -10,8 +10,36 @@ class Instruction
     public const LEFT = "L";
     public const RIGHT = "R";
 
-    public function __construct(private string $instruction, private int $nb = 1)
+    public function __construct(private string $instruction, private int $nb = 1, private bool $withBrackets = false, private bool $withPrintedNumber = false)
     {
+    }
+
+    public function getText(): string
+    {
+        return $this->instruction;
+    }
+    
+    public function getNb(): int
+    {
+        return $this->nb;
+    }
+
+    public function __toString(): string
+    {
+        $parsedInstruction = "";
+
+        if (\in_array($this->getText(), self::allInstructions())){
+            $parsedInstruction = $this->getText();
+        } else {
+            $parsedInstruction = InstructionParser::parseCode($this->instruction);
+        }
+        
+        $ret = $parsedInstruction;
+        for($a = 1; $a < $this->nb; $a++) {
+            $ret .= $parsedInstruction;
+        }
+
+        return $ret;
     }
 
     /**
@@ -23,27 +51,8 @@ class Instruction
         return [self::FORWARD, self::LEFT, self::RIGHT];
     }
 
-    /**
-     * 
-     * @return Position[] 
-     */
-    public function execute(Position $position): array
-    {
-        $positions = [];
-        for ($a = 0; $a < $this->nb; $a++) {
-            $position = match($this->instruction) {
-                self::FORWARD => $position->direction->nextPosition($position),
-                self::LEFT => new Position($position->x, $position->y, $position->direction->goLeft()),
-                self::RIGHT => new Position($position->x, $position->y, $position->direction->goRight())
-            };
-            $positions[] = $position;
-        }
-
-        return $positions;
-    }
-
     public function size(): int 
     {
-        return \strlen($this->instruction) + ($this->nb === 1 ? 0 : \strlen((string)$this->nb));
+        return \strlen($this->instruction) + ($this->nb === 1 ? ($this->withPrintedNumber ? \strlen((string)$this->nb) : 0) : \strlen((string)$this->nb)) + ($this->withBrackets ? 2 : 0);
     }
 }

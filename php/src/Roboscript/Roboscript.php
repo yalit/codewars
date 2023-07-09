@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Roboscript;
 
-use Exception;
-
 /**
  * Implementing solutions for the series of Kata on Codewards Roboscript starting here : https://www.codewars.com/kata/roboscript-number-1-implement-syntax-highlighting
  */
-final class Roboscript 
+final class Roboscript
 {
-    public static function highlight(string $code): string
+    /**
+     * 
+     * @var string[][] $positions
+     */
+    private array $positions = [];
+
+    private Direction $currentDirection;
+
+    public function highlight(string $code): string
     {
         return \preg_replace(
             ['/(F+)/', '/(L+)/', '/(R+)/', '/([0-9]+)/'],
@@ -20,20 +26,56 @@ final class Roboscript
         );
     }
 
-    public static function execute(string $code): string
+    public function execute(string $code): string
     {
         //initialize
         /** @var Position[] $positions */
-        $positions = [new Position(0, 0, Direction::RIGHT)];
+        $this->positions = [[0, 0]];
+        $this->currentDirection = new Direction(Direction::RIGHT);
+        
+        $this->doExecute(str_split($code));
 
-        $i = 0;
-        $execCode = str_split($code);
-        while($i < count($execCode)) {
-            $instruction = InstructionParser::getNextInstruction(\array_slice($execCode, $i));
-            $positions = \array_merge($positions, $instruction->execute($positions[count($positions) - 1]));
-            $i += $instruction->size();
+        return (new Grid($this->positions))->display();
+    }
+
+    /**
+     * 
+     * @param string[] $code
+     * @param Position[] $positions
+     * @return Position[]
+     */
+    private function doExecute(array $code): void
+    {
+        if (count($code) === 0) {
+            return;
         }
 
-        return (new Grid($positions))->display();
+        //parse
+        $nextInstruction = InstructionParser::getNextInstruction($code);
+        $this->runInstruction($nextInstruction);
+        //next
+        $this->doExecute(\array_slice($code, $nextInstruction->size()));
+    }
+
+    private function runInstruction(Instruction $instruction): void
+    {
+        for($a = 0; $a < $instruction->getNb(); $a++) {
+            if (\in_array($instruction->getText(), Instruction::allInstructions())) {
+                $this->action($instruction->getText());
+            } else {
+                self::doExecute(\str_split($instruction->getText()));
+            }
+        }
+        
+    }
+
+    private function action(string $action): void
+    {
+        $position = end($this->positions);
+        match($action) {
+            Instruction::FORWARD => $this->positions[] = $this->currentDirection->nextPosition($position),
+            Instruction::LEFT => $this->currentDirection = $this->currentDirection->goLeft(),
+            Instruction::RIGHT => $this->currentDirection = $this->currentDirection->goRight()
+        };
     }
 }

@@ -21,7 +21,7 @@ final class Grid
         for ($y = $minMax['height']['min']; $y <= $minMax['height']['max']; $y++) {
             $grid[] = "";
             for ($x = $minMax['width']['min']; $x <= $minMax['width']['max']; $x++) {
-                $grid[$y - $minMax['height']['min']] .= static::isInPositions($this->positions, new Position($x, $y, Direction::UP)) ? "*" : " ";
+                $grid[$y - $minMax['height']['min']] .= \in_array([$x, $y], $this->positions) ? "*" : " ";
             }
         }
 
@@ -38,23 +38,9 @@ final class Grid
             'height' => ['min' => 0, 'max' => 0]
         ];
 
-        return array_reduce($this->positions, fn($mm, Position $pos) => [
-            'width' => ['min' => min($mm['width']['min'], $pos->x), 'max' => max($mm['width']['max'], $pos->x)],
-            'height' => ['min' => min($mm['height']['min'], $pos->y), 'max' => max($mm['height']['max'], $pos->y)]
+        return array_reduce($this->positions, fn($mm, array $pos) => [
+            'width' => ['min' => min($mm['width']['min'], $pos[0]), 'max' => max($mm['width']['max'], $pos[0])],
+            'height' => ['min' => min($mm['height']['min'], $pos[1]), 'max' => max($mm['height']['max'], $pos[1])]
         ], $base);
-    }
-
-    /**
-     * 
-     * @param Position[] $positions 
-     */
-    private static function isInPositions(array $positions, Position $position): bool 
-    {
-        foreach($positions as $pos) {
-            if ($position->x === $pos->x && $position->y === $pos->y) {
-                return true;
-            }
-        }
-        return false;
     }
 }
